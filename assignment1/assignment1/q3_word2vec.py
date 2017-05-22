@@ -113,23 +113,37 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
 
     ### YOUR CODE HERE
     # raise NotImplementedError
-    predicted = np.reshape(predicted,(1,outputVectors.shape[1]))
-    cost = -np.log(sigmoid(np.dot(outputVectors[target],predicted.T)))
+    # predicted = np.reshape(predicted,(1,outputVectors.shape[1]))
+    cost = -np.log(sigmoid(np.dot(outputVectors[target],predicted)))
     for k in indices:
-        cost -= np.log(sigmoid(-np.dot(outputVectors[k],predicted.T)))
+        cost -= np.log(sigmoid(-np.dot(outputVectors[k],predicted)))
 
     uo = outputVectors[target]
-    gradPred = (sigmoid(np.dot(uo,predicted.T))-1)*uo
+    gradPred = (sigmoid(np.dot(uo,predicted))-1)*uo
     for k in indices:
-        gradPred -= (sigmoid(-np.dot(outputVectors[k],predicted.T))-1)*outputVectors[k]
+        gradPred -= (sigmoid(-np.dot(outputVectors[k],predicted))-1)*outputVectors[k]
 
     grad = np.zeros(outputVectors.shape)
-    grad[target] = (sigmoid(np.dot(uo,predicted.T))-1)*predicted[0]
+    grad[target] += (sigmoid(np.dot(uo,predicted))-1)*predicted
     for k in indices:
-        if k==target:
-            continue
-        grad[i] = (sigmoid(-np.dot(outputVectors[k],predicted.T))-1)*predicted[0]
+        grad[k] -= (sigmoid(-np.dot(outputVectors[k],predicted))-1)*predicted
 
+
+    # gradPred = np.zeros_like(predicted)
+    # grad = np.zeros_like(outputVectors)
+    # cost = 0
+    
+    # z = sigmoid(np.dot(outputVectors[target], predicted))
+    # cost -= np.log(z)
+    # gradPred += outputVectors[target] * (z-1)
+    # grad[target] += predicted * (z-1)
+    
+    # for k in range(K):
+    #     sampled_idx = dataset.sampleTokenIdx()
+    #     z = sigmoid(np.dot(outputVectors[sampled_idx], predicted))
+    #     cost -= np.log(1 - z)
+    #     gradPred += z * outputVectors[sampled_idx]
+    #     grad[sampled_idx] += z * predicted
 
     ### END YOUR CODE
 
@@ -176,7 +190,7 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradOut = np.zeros(outputVectors.shape)
     for cw in contextWords:
         cnt_index = tokens[cw]
-        one_cost,pre_grad,oth_grad = softmaxCostAndGradient(in_vec, cnt_index, outputVectors, dataset)
+        one_cost,pre_grad,oth_grad = word2vecCostAndGradient(in_vec, cnt_index, outputVectors, dataset)
         cost += one_cost
         gradIn[c_index] += pre_grad
         gradOut += oth_grad
